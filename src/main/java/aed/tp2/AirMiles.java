@@ -70,12 +70,12 @@ public class AirMiles implements SistemaAirMiles {
 
     public double consultarSaldo(int id) {
         Usuario u = new Usuario(id);
-        return u.getMillasDisponibles;
+        return u.getMillasDisponibles();
     }
 
     public String consultarCategoria(int id) {
        Usuario u = new Usuario(id);
-       millas u.getMillasDisponibles;
+       double millas = u.getMillasDisponibles();
 
        if (millas < 10000) return "Bronce";
         if (millas < 50000) return "Plata";
