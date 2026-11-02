@@ -60,7 +60,13 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public String consultarCategoria(int id) {
-       throw new UnsupportedOperationException("Sin implementar");
+       Usuario u = new Usuario(id);
+       millas u.getMillasDisponibles;
+
+       if (millas < 10000) return "Bronce";
+        if (millas < 50000) return "Plata";
+         if (millas < 1000000) return "Oro";
+        return "Platino";
     }
 
     public int[] rankingMillas(int n) {
