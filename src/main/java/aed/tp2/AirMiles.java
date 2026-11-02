@@ -33,13 +33,13 @@ public class AirMiles implements SistemaAirMiles {
         this.usuarios.insertar(nuevo);
     }
 
-    private Usuario buscarUsuario(int id){
+    private Usuario buscarUsuario(int id){ // PREGUNTAR SI ES VALIDO
         Usuario u = new Usuario(id);
         return usuarios.obtener(u);
     }
 
-    public void acumularMillas(int id, double distancia, String nombrePromo) {
-        Promocion promo = promociones.obtener(nombrePromo);
+    public void acumularMillas(int id, double distancia, String nombre) {
+        Promocion promo = promociones.obtener(nombre);
         Usuario u = buscarUsuario(id);
         //si tope es -1 es que es promocion sin tope
         if (promo.getTope() == -1) {
