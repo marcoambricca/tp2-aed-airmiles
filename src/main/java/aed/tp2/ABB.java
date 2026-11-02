@@ -1,3 +1,5 @@
+package aed.tp2;
+
 import java.util.*;
 
 // Todos los tipos de datos "Comparables" tienen el método compareTo()
