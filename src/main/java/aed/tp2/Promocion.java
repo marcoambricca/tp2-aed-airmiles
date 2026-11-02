@@ -1,6 +1,6 @@
 package aed.tp2;
 
-public class Promocion {
+public class Promocion{
     private String nombre;
     private double factor;
     private double tope;
@@ -21,5 +21,13 @@ public class Promocion {
 
     public double getTope() {
         return tope;
+    }
+
+    public void setTope(double tope) {
+        this.tope = tope;
+    }
+
+    public int compareTo(Promocion otra) {
+        return this.nombre.compareTo(otra.nombre);
     }
 }
