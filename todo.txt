@@ -1,0 +1,4 @@
+- implementar maxHeap
+- hacer/revisar/corregir funcion buscarUsuario
+- ver si anda el Trie
+- ver como hacer una clase generica de nodo para las demas estructuras que usen Nodo
