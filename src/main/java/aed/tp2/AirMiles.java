@@ -33,13 +33,13 @@ public class AirMiles implements SistemaAirMiles {
         this.usuarios.insertar(nuevo);
     }
 
-    private Usuario buscarUsuario(int id){
+    private Usuario buscarUsuario(int id){ // PREGUNTAR SI ES VALIDO
         Usuario u = new Usuario(id);
         return usuarios.obtener(u);
     }
 
-    public void acumularMillas(int id, double distancia, String nombrePromo) {
-        Promocion promo = promociones.obtener(nombrePromo);
+    public void acumularMillas(int id, double distancia, String nombre) {
+        Promocion promo = promociones.obtener(nombre);
         Usuario u = buscarUsuario(id);
         if (promo.getTope() == 0) {
             u.setMillasDisponibles(distancia * promo.getFactor());
@@ -96,16 +96,18 @@ public class AirMiles implements SistemaAirMiles {
         return ranking;
     }
 
-    public void iniciarPromocion(String nombre, double factor) {
-        throw new UnsupportedOperationException("Sin implementar");
+    public void iniciarPromocion(String nombre, double factor) { // implementar tries
+        Promocion promocion = new Promocion(nombre, factor, -1); // Tries<String, Promocion> --> O SEA QUE EL NOMBRE QUEDA DENTRO DE LA PROMOCION Y EN EL NODO
+        this.promociones.agregar(nombre,promocion);
     }
 
-    public void iniciarPromocionConTope(String nombre, double factor, double tope) {
-        throw new UnsupportedOperationException("Sin implementar");
+    public void iniciarPromocionConTope(String nombre, double factor, double tope) { 
+        Promocion promocion = new Promocion(nombre, factor, tope);
+        this.promociones.agregar(nombre,promocion);
     }
 
     public void finalizarPromocion(String nombre) {
-        throw new UnsupportedOperationException("Sin implementar");
+        
     }
 
     public int elMasAcumulador() {
