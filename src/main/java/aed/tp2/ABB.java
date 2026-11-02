@@ -1,4 +1,4 @@
-import java.util.*;
+package aed.tp2;
 
 // Todos los tipos de datos "Comparables" tienen el método compareTo()
 // elem1.compareTo(elem2) devuelve un entero. Si es mayor a 0, entonces elem1 > elem2

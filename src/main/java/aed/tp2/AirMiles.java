@@ -2,11 +2,18 @@ package aed.tp2;
 
 public class AirMiles implements SistemaAirMiles {
     /*COMPLETAR*/
-    private ABB<Usuario> usuarios;
-    
+    private ABB<Integer> usuarios;
+    private MaxHeap<Usuario> rankingMillas;
+    private Usuario masCanjeador;
+    private Usuario masAcumulador;
+    private Tries<String, Promocion> promociones;
 
     public AirMiles() {
-        throw new UnsupportedOperationException("Sin implementar");
+        this.usuarios = new ABB<>();
+        this.rankingMillas = new MaxHeap<>();
+        this.masCanjeador = null;
+        this.masAcumulador = null;
+        this.promociones = new Tries<>();
     }
 
     public void registrarUsuario(int id) {
@@ -71,5 +78,26 @@ public class AirMiles implements SistemaAirMiles {
 
         Usuario exclusivo;
         boolean esExclusivo;
+
+        public Usuario(int id) {
+            this.id = id;
+            this.millasDisponibles = 0;
+            this.millasAcumuladas = 0;
+            this.millasCanjeadas = 0;
+            this.exclusivo = null;
+            this.esExclusivo = false;
+        }
+    }
+
+    private class Promocion{
+        private String nombre;
+        private double factor;
+        private double tope;
+
+        public Promocion(String nombre, double factor, double tope) {
+            this.nombre = nombre;
+            this.factor = factor;
+            this.tope = tope;
+        }
     }
 }
