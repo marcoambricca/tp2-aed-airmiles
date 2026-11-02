@@ -91,23 +91,23 @@ public class ABB<T extends Comparable<T>> {
         }
     }
 
-    public boolean pertenece(T elem) {
-        return busqueda_recursiva(_raiz, elem);
+    public Nodo obtener(T elem) {
+        return obtener_recursivo(_raiz, elem);
     }
 
-    private boolean busqueda_recursiva(Nodo actual, T elem) {
+    private Nodo obtener_recursivo(Nodo actual, T elem) {
         if (actual == null) {
-            return false;
+            return null;
         }
 
         int compare = elem.compareTo(actual.dato);
 
         if (compare > 0) {
-            return busqueda_recursiva(actual.r, elem);
+            return obtener_recursivo(actual.r, elem);
         } else if (compare < 0) {
-            return busqueda_recursiva(actual.l, elem);
+            return obtener_recursivo(actual.l, elem);
         } else {
-            return true;
+            return actual;
         }
 
     }
