@@ -1,5 +1,9 @@
 package aed.tp2;
 
+import java.util.ArrayList;
+
+import aed.tp2.ABB.ABB_Iterador;
+
 public class AirMiles implements SistemaAirMiles {
     /*COMPLETAR*/
     private ABB<Usuario> usuarios;
@@ -105,14 +109,36 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public int elMasAcumulador() {
-        throw new UnsupportedOperationException("Sin implementar");
+        return this.masAcumulador.getId();
     }
 
     public int elMasCanjeador() {
-        throw new UnsupportedOperationException("Sin implementar");
+        return this.masCanjeador.getId();
     }
 
     public int[][] paresTransferidoresExclusivos() {
-        throw new UnsupportedOperationException("Sin implementar");
+        ArrayList<int[]> paresaux = new ArrayList<int[]>();
+
+        ABB<Usuario>.ABB_Iterador it = this.usuarios.iterador();
+
+        while (it.haySiguiente()) {
+            Usuario u = it.siguiente();
+
+            if (u.esExclusivo) {
+                Usuario u2 = u.exclusivo;
+                if (u2.esExclusivo && u2.exclusivo == u) {
+                    if (u.getId() < u2.getId()) {
+                            paresaux.add(new int[]{u.getId(), u2.getId()});
+                        }
+                }
+            }
+        }
+
+        int[][] res = new int[paresaux.size()][2];
+        for (int i = 0; i < paresaux.size(); i++) {
+            res[i] = paresaux.get(i);
+        }
+
+        return res;
     }
 }
