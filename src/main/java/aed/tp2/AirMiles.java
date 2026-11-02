@@ -41,7 +41,6 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public void canjearMillas(int id, double cantidad) {
-        throw new UnsupportedOperationException("Sin implementar");
     }
 
     public void transferirMillas(int origen, int destino, double cantidad) {
@@ -49,7 +48,8 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public double consultarSaldo(int id) {
-        throw new UnsupportedOperationException("Sin implementar");
+        Usuario u = new Usuario(id);
+        return u.getMillasDisponibles;
     }
 
     public String consultarCategoria(int id) {
