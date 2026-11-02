@@ -10,4 +10,16 @@ public class Promocion {
         this.factor = factor;
         this.tope = tope;
     }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public double getFactor() {
+        return factor;
+    }
+
+    public double getTope() {
+        return tope;
+    }
 }
