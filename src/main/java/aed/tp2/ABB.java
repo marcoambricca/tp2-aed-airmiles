@@ -107,7 +107,6 @@ public class ABB<T extends Comparable<T>> {
         } else {
             return actual;
         }
-
     }
 
     public void eliminar(T elem) {

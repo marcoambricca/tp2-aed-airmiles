@@ -69,7 +69,8 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public double consultarSaldo(int id) {
-        throw new UnsupportedOperationException("Sin implementar");
+        Usuario u = new Usuario(id);
+        return u.getMillasDisponibles;
     }
 
     public String consultarCategoria(int id) {
