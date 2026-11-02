@@ -89,8 +89,8 @@ public class ABB<T extends Comparable<T>> {
         }
     }
 
-    public Nodo obtener(T elem) {
-        return obtener_recursivo(_raiz, elem);
+    public T obtener(T elem) {
+        return obtener_recursivo(_raiz, elem).dato;
     }
 
     private Nodo obtener_recursivo(Nodo actual, T elem) {

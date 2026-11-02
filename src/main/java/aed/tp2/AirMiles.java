@@ -23,12 +23,17 @@ public class AirMiles implements SistemaAirMiles {
 
     public void registrarUsuarioConReferidor(int id, int ref) {
         Usuario nuevo = new Usuario(id);
-        Usuario referidor = usuarios.obtener(ref);
+        Usuario referidor = buscarUsuario(ref);
         if (this.usuarios.minimo().compareTo(referidor) <= 0 && this.usuarios.maximo().compareTo(referidor) >= 0) {
             nuevo.exclusivo = referidor;
             nuevo.esExclusivo = true;
         }
         this.usuarios.insertar(nuevo);
+    }
+
+    private Usuario buscarUsuario(int id){
+        Usuario u = new Usuario(id);
+        return usuarios.obtener(u);
     }
 
     public void acumularMillas(int id, double distancia, String nombrePromo) {
