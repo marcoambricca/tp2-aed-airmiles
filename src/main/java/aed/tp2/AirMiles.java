@@ -23,11 +23,9 @@ public class AirMiles implements SistemaAirMiles {
 
     public void registrarUsuarioConReferidor(int id, int ref) {
         Usuario nuevo = new Usuario(id);
+        nuevo.setMillasDisponibles(500);
         Usuario referidor = buscarUsuario(ref);
-        if (this.usuarios.minimo().compareTo(referidor) <= 0 && this.usuarios.maximo().compareTo(referidor) >= 0) {
-            nuevo.exclusivo = referidor;
-            nuevo.esExclusivo = true;
-        }
+        referidor.setMillasDisponibles(500);
         this.usuarios.insertar(nuevo);
     }
 
@@ -37,14 +35,23 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public void acumularMillas(int id, double distancia, String nombrePromo) {
-        throw new UnsupportedOperationException("Sin implementar");
+        Promocion promo = promociones.obtener(nombrePromo);
+        Usuario u = buscarUsuario(id);
+        u.setMillasDisponibles(distancia * promo.getFactor());
+        //logica de promocionConTope
     }
 
     public void canjearMillas(int id, double cantidad) {
+        Usuario u = buscarUsuario(id);
+        u.setMillasDisponibles(-(cantidad));
+        u.setMillasCanjeadas(cantidad);
     }
 
     public void transferirMillas(int origen, int destino, double cantidad) {
-        throw new UnsupportedOperationException("Sin implementar");
+        Usuario uOrigen = buscarUsuario(origen);
+        Usuario uDestino = buscarUsuario(destino);
+        uOrigen.setMillasDisponibles(-cantidad);
+        uDestino.setMillasDisponibles(cantidad);
     }
 
     public double consultarSaldo(int id) {
