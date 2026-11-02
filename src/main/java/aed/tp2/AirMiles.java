@@ -159,4 +159,3 @@ public class AirMiles implements SistemaAirMiles {
         return res;
     }
 }
-sadfasdf
