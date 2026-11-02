@@ -37,20 +37,34 @@ public class AirMiles implements SistemaAirMiles {
     public void acumularMillas(int id, double distancia, String nombrePromo) {
         Promocion promo = promociones.obtener(nombrePromo);
         Usuario u = buscarUsuario(id);
+        if (promo.getTope() == 0) {
+            u.setMillasDisponibles(distancia * promo.getFactor());
+        } else {
+            //logica de promocionConTope
+        }
         u.setMillasDisponibles(distancia * promo.getFactor());
-        //logica de promocionConTope
+        if (u.getMillasDisponibles() > this.masAcumulador.getMillasDisponibles()) {
+            this.masAcumulador = u;
+        }
     }
 
     public void canjearMillas(int id, double cantidad) {
         Usuario u = buscarUsuario(id);
         u.setMillasDisponibles(-(cantidad));
         u.setMillasCanjeadas(cantidad);
+        if (u.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
+            this.masCanjeador = u;
+        }
     }
 
     public void transferirMillas(int origen, int destino, double cantidad) {
         Usuario uOrigen = buscarUsuario(origen);
         Usuario uDestino = buscarUsuario(destino);
         uOrigen.setMillasDisponibles(-cantidad);
+        uOrigen.setMillasCanjeadas(cantidad);
+        if (uOrigen.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
+            this.masCanjeador = uOrigen;
+        }
         uDestino.setMillasDisponibles(cantidad);
     }
 
@@ -70,7 +84,12 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public int[] rankingMillas(int n) {
-        throw new UnsupportedOperationException("Sin implementar");
+        int[] ranking = new int[n];
+        for (int i = 0; i < n; i++) {
+            Usuario u = rankingMillas.eliminarMax();
+            ranking[i] = u.getId();
+        }
+        return ranking;
     }
 
     public void iniciarPromocion(String nombre, double factor) {

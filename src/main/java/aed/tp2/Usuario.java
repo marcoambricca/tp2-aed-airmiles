@@ -16,6 +16,10 @@ public class Usuario implements Comparable<Usuario> {
         this.esExclusivo = false;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public void setMillasDisponibles(double millas) {
         this.millasDisponibles += millas;
     }
@@ -26,6 +30,18 @@ public class Usuario implements Comparable<Usuario> {
 
     public void setMillasCanjeadas(double millas) {
         this.millasCanjeadas += millas;
+    }
+
+    public double getMillasDisponibles() {
+        return millasDisponibles;
+    }
+
+    public double getMillasAcumuladas() {
+        return millasAcumuladas;
+    }
+
+    public double getMillasCanjeadas() {
+        return millasCanjeadas;
     }
 
     public int compareTo(Usuario otro) {
