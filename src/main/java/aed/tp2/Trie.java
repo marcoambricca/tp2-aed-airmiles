@@ -13,14 +13,14 @@ public class Trie<T> {
 
     }
 
-    private Nodo<T> raiz = new Nodo<>("");
+    private Nodo<T> raiz = new Nodo<>('\0');
     /*El método busca o crea un nodo hijo de padre cuyo carácter sea c. Recorre la lista enlazada de hijos, que se mantiene ordenada por carácter, usando h para el nodo actual y ant para el anterior. El recorrido se detiene al encontrar un carácter igual o uno mayor que c.
 
     Si encuentra un hijo con carácter c, lo devuelve sin modificar la lista. De lo contrario, crea un nodo y lo inserta en la posición correcta: antes de h. Si no hay nodo anterior, el nuevo pasa a ser el primer hijo; si lo hay, se enlaza después de ant. Finalmente, devuelve el nodo creado. 
     
     que pasa si hay una promo "PROMO" y otra "PROMOCION". donde termina promo y donde empieza "ocion"*/
     private Nodo<T> definirAux(Nodo<T> actual, char c) {
-        Nodo<T> anterior;
+        Nodo<T> anterior = null;
         Nodo<T> hijo = actual.hijo;
         while (hijo != null && hijo.c != c) {
           anterior = hijo;
@@ -65,52 +65,49 @@ public class Trie<T> {
     public T obtener(String palabra) {
         Nodo<T> nodo = obtenerAux(palabra);
         if (nodo == null) {
-            throw new Error("palabra no existe");
+            throw new Error("no existe la palabra");
         }
         return nodo.valor;
     }
 
-
-
-
-
-    
-    public boolean borrar(String clave) {
-        Nodo<T> n = buscarNodo(clave);
-        if (n == null || n.valor == null)
-            return false; // no estaba
-        borrarRecursivo(raiz, clave, 0);
-        tamaño--;
-        return true;
+    public void borrar(String palabra) {
+        raiz.hijo = borrarAux(raiz.hijo, palabra, 0);
     }
 
-    // Devuelve true si 'nodo' quedó sin valor y sin hijos (el padre lo puede sacar)
-    private boolean borrarRecursivo(Nodo<T> nodo, String clave, int i) {
-        if (i == clave.length()) {
-            nodo.valor = null; // caso base: llegamos al final
-        } else {
-            char c = clave.charAt(i);
+    private Nodo<T> borrarAux(Nodo<T> actualHermano, String palabra, int indice) {
+        if (actualHermano == null) { //este if se cubre si el hijo es null
+            throw new Error("no existe la palabra");
+        }
+        char c = palabra.charAt(indice);
+        Nodo<T> hermanoAnterior = null;
+        Nodo<T> nodo = actualHermano;
+        while (nodo != null && nodo.c != c) {
+            hermanoAnterior = nodo;
+            nodo = nodo.hermano;
+        }
 
-            // buscar el hijo con la letra c, recordando el hermano anterior
-            Nodo<T> ant = null;
-            Nodo<T> h = nodo.hijo;
-            while (h.c != c) { // existe seguro: ya lo verificó borrar()
-                ant = h;
-                h = h.hermano;
+        if (nodo == null) {
+            throw new Error("no existe la palabra"); //xq no existe la palabra
+        }
+
+
+        if (indice == palabra.length() - 1) {
+            if (nodo.valor == null) {
+                throw new Error ("no existe la palabra"); //la palabra "existe" como prefijo (pero no es una palabra con valor)
             }
+            nodo.valor = null;
+        } else {
+            nodo.hijo = borrarAux(nodo.hijo, palabra, indice + 1);
+        }
 
-            if (borrarRecursivo(h, clave, i + 1)) {
-                // desenganchar h de la lista de hermanos
-                if (ant == null)
-                    nodo.hijo = h.hermano;
-                else
-                    ant.hermano = h.hermano;
+        if (nodo.valor == null && nodo.hijo == null) {
+            if (hermanoAnterior == null) {
+                actualHermano = nodo.hermano;
+            } else {
+                hermanoAnterior.hermano = nodo.hermano;
             }
         }
-        return nodo.valor == null && nodo.hijo == null;
-    }
 
-    public int tamaño() {
-        return tamaño;
+        return actualHermano;
     }
 }
