@@ -33,6 +33,22 @@ public class Usuario implements Comparable<Usuario> {
         this.millasCanjeadas += millas;
     }
 
+    public void setExclusivo(Usuario u) {
+        this.exclusivo = u;
+    }
+
+    public Usuario getExclusivo() {
+        return this.exclusivo;
+    }
+
+    public boolean getEsExclusivo() {
+        return this.esExclusivo;
+    }
+
+    public void setEsExclusivo(boolean esExclusivo) {
+        this.esExclusivo = esExclusivo;
+    }
+
     public double getMillasDisponibles() {
         return millasDisponibles;
     }

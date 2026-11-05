@@ -1,6 +1,7 @@
 package aed.tp2;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import aed.tp2.ABB.ABB_Iterador;
 
@@ -10,14 +11,20 @@ public class AirMiles implements SistemaAirMiles {
     private MaxHeap<Usuario> rankingMillas;
     private Usuario masCanjeador;
     private Usuario masAcumulador;
-    private Tries<String, Promocion> promociones;
+    private Trie<Promocion> promociones;
 
     public AirMiles() {
         this.usuarios = new ABB<>();
-        this.rankingMillas = new MaxHeap<>();
+        this.rankingMillas = new MaxHeap<>(new PorMillasDisponibles());
         this.masCanjeador = null;
         this.masAcumulador = null;
-        this.promociones = new Tries<>();
+        this.promociones = new Trie<>();
+    }
+
+    //esto va aca?
+    private class PorMillasDisponibles implements Comparator<Usuario>{
+        @Override
+        public int compare(Usuario a, Usuario b) {return Double.compare(a.getMillasDisponibles(), b.getMillasDisponibles());}
     }
 
     public void registrarUsuario(int id) {
@@ -33,21 +40,36 @@ public class AirMiles implements SistemaAirMiles {
         this.usuarios.insertar(nuevo);
     }
 
-    private Usuario buscarUsuario(int id){
+    private Usuario buscarUsuario(int id){ // PREGUNTAR SI ES VALIDO
         Usuario u = new Usuario(id);
         return usuarios.obtener(u);
     }
 
-    public void acumularMillas(int id, double distancia, String nombrePromo) {
-        Promocion promo = promociones.obtener(nombrePromo);
+    public void acumularMillas(int id, double distancia, String nombre) {
+        Promocion promo = promociones.obtener(nombre);
         Usuario u = buscarUsuario(id);
-        if (promo.getTope() == 0) {
+        //si tope es -1 es que es promocion sin tope
+        if (promo.getTope() == -1) {
             u.setMillasDisponibles(distancia * promo.getFactor());
-        } else {
-            //logica de promocionConTope
+        } 
+        //si tope no es -1 es que es promocion con tope
+        else {
+            //si la cantidad de millas que se acumularian es mayor al tope, se acumula la distancia sin factor
+            if (distancia * promo.getFactor() > promo.getTope()) {
+                u.setMillasDisponibles(distancia);
+            //si la cantidad de millas que se acumularian es menor o igual al tope, se acumula la distancia con factor y se descuenta del tope
+            } else if (distancia * promo.getFactor() <= promo.getTope()) {
+                u.setMillasDisponibles(distancia * promo.getFactor());
+                promo.setTope(promo.getTope() - distancia * promo.getFactor());
+            }
+
+            //veo luego de acumular si no queda tope y en ese caso borro la promocion
+            if (promo.getTope() == 0){
+                this.finalizarPromocion(nombre);
+            }
         }
-        u.setMillasDisponibles(distancia * promo.getFactor());
-        if (u.getMillasDisponibles() > this.masAcumulador.getMillasDisponibles()) {
+        //logica mas acumulador
+        if (this.masAcumulador == null || u.getMillasDisponibles() > this.masAcumulador.getMillasDisponibles()) {
             this.masAcumulador = u;
         }
     }
@@ -56,7 +78,7 @@ public class AirMiles implements SistemaAirMiles {
         Usuario u = buscarUsuario(id);
         u.setMillasDisponibles(-(cantidad));
         u.setMillasCanjeadas(cantidad);
-        if (u.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
+        if (this.masCanjeador == null || u.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
             this.masCanjeador = u;
         }
     }
@@ -66,7 +88,7 @@ public class AirMiles implements SistemaAirMiles {
         Usuario uDestino = buscarUsuario(destino);
         uOrigen.setMillasDisponibles(-cantidad);
         uOrigen.setMillasCanjeadas(cantidad);
-        if (uOrigen.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
+        if (this.masCanjeador == null || uOrigen.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
             this.masCanjeador = uOrigen;
         }
         uDestino.setMillasDisponibles(cantidad);
@@ -90,22 +112,24 @@ public class AirMiles implements SistemaAirMiles {
     public int[] rankingMillas(int n) {
         int[] ranking = new int[n];
         for (int i = 0; i < n; i++) {
-            Usuario u = rankingMillas.eliminarMax();
+            Usuario u = rankingMillas.desencolarMax();
             ranking[i] = u.getId();
         }
         return ranking;
     }
 
     public void iniciarPromocion(String nombre, double factor) {
-        throw new UnsupportedOperationException("Sin implementar");
+        Promocion promo = new Promocion(nombre, factor, -1);
+        promociones.definir(nombre, promo);
     }
 
     public void iniciarPromocionConTope(String nombre, double factor, double tope) {
-        throw new UnsupportedOperationException("Sin implementar");
+        Promocion promo = new Promocion(nombre, factor, tope);
+        promociones.definir(nombre, promo);
     }
 
     public void finalizarPromocion(String nombre) {
-        throw new UnsupportedOperationException("Sin implementar");
+        this.promociones.borrar(nombre);
     }
 
     public int elMasAcumulador() {
