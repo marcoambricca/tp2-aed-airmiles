@@ -18,7 +18,7 @@ public class AirMiles implements SistemaAirMiles {
         this.rankingMillas = new MaxHeap<>(new PorMillasDisponibles());
         this.masCanjeador = null;
         this.masAcumulador = null;
-        this.promociones = new Trie<>();
+        this.promociones = new Trie<>(); // hay que agregar la promocion NoPromo, fact 1.
     }
 
     //esto va aca?
@@ -50,17 +50,17 @@ public class AirMiles implements SistemaAirMiles {
         Usuario u = buscarUsuario(id);
         //si tope es -1 es que es promocion sin tope
         if (promo.getTope() == -1) {
-            u.setMillasDisponibles(distancia * promo.getFactor());
+            u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
         } 
         //si tope no es -1 es que es promocion con tope
         else {
             //si la cantidad de millas que se acumularian es mayor al tope, se acumula la distancia sin factor
             if (distancia * promo.getFactor() > promo.getTope()) {
-                u.setMillasDisponibles(distancia);
+                u.setMillasDisponibles(distancia * categoriaFactor(id));
             //si la cantidad de millas que se acumularian es menor o igual al tope, se acumula la distancia con factor y se descuenta del tope
             } else if (distancia * promo.getFactor() <= promo.getTope()) {
-                u.setMillasDisponibles(distancia * promo.getFactor());
-                promo.setTope(promo.getTope() - distancia * promo.getFactor());
+                u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
+                promo.setTope(promo.getTope() - distancia * promo.getFactor() * categoriaFactor(id));
             }
 
             //veo luego de acumular si no queda tope y en ese caso borro la promocion
@@ -95,18 +95,24 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public double consultarSaldo(int id) {
-        Usuario u = new Usuario(id);
-        return u.getMillasDisponibles();
+        return buscarUsuario(id).getMillasDisponibles();
     }
 
     public String consultarCategoria(int id) {
-       Usuario u = new Usuario(id);
-       double millas = u.getMillasDisponibles();
+       double millas = buscarUsuario(id).getMillasDisponibles();
 
        if (millas < 10000) return "Bronce";
         if (millas < 50000) return "Plata";
          if (millas < 1000000) return "Oro";
         return "Platino";
+    }
+
+    public double categoriaFactor(int id) {
+        String categoria = consultarCategoria(id);
+        if (categoria == "Bronce") return 1;
+        if (categoria == "Plata") return 1.5;
+        if (categoria == "Oro") return 2;
+        return 0;
     }
 
     public int[] rankingMillas(int n) {
