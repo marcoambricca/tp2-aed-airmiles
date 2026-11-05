@@ -1,23 +1,30 @@
 package aed.tp2;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import aed.tp2.ABB.ABB_Iterador;
 
 public class AirMiles implements SistemaAirMiles {
     /*COMPLETAR*/
     private ABB<Usuario> usuarios;
-    //private MaxHeap<Usuario> rankingMillas;
+    private MaxHeap<Usuario> rankingMillas;
     private Usuario masCanjeador;
     private Usuario masAcumulador;
     private Trie<Promocion> promociones;
 
     public AirMiles() {
         this.usuarios = new ABB<>();
-        //this.rankingMillas = new MaxHeap<>();
+        this.rankingMillas = new MaxHeap<>(new PorMillasDisponibles());
         this.masCanjeador = null;
         this.masAcumulador = null;
         this.promociones = new Trie<>();
+    }
+
+    //esto va aca?
+    private class PorMillasDisponibles implements Comparator<Usuario>{
+        @Override
+        public int compare(Usuario a, Usuario b) {return Double.compare(a.getMillasDisponibles(), b.getMillasDisponibles());}
     }
 
     public void registrarUsuario(int id) {
@@ -58,7 +65,7 @@ public class AirMiles implements SistemaAirMiles {
 
             //veo luego de acumular si no queda tope y en ese caso borro la promocion
             if (promo.getTope() == 0){
-                this.finalizarPromocion(nombrePromo);
+                this.finalizarPromocion(nombre);
             }
         }
         //logica mas acumulador
@@ -102,14 +109,14 @@ public class AirMiles implements SistemaAirMiles {
         return "Platino";
     }
 
-    /*public int[] rankingMillas(int n) {
+    public int[] rankingMillas(int n) {
         int[] ranking = new int[n];
         for (int i = 0; i < n; i++) {
-            Usuario u = rankingMillas.eliminarMax();
+            Usuario u = rankingMillas.desencolarMax();
             ranking[i] = u.getId();
         }
         return ranking;
-    }*/
+    }
 
     public void iniciarPromocion(String nombre, double factor) {
         Promocion promo = new Promocion(nombre, factor, -1);
