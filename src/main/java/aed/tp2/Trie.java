@@ -12,13 +12,8 @@ public class Trie<T> {
         }
 
     }
-
-    private Nodo<T> raiz = new Nodo<>('\0');
-    /*El método busca o crea un nodo hijo de padre cuyo carácter sea c. Recorre la lista enlazada de hijos, que se mantiene ordenada por carácter, usando h para el nodo actual y ant para el anterior. El recorrido se detiene al encontrar un carácter igual o uno mayor que c.
-
-    Si encuentra un hijo con carácter c, lo devuelve sin modificar la lista. De lo contrario, crea un nodo y lo inserta en la posición correcta: antes de h. Si no hay nodo anterior, el nuevo pasa a ser el primer hijo; si lo hay, se enlaza después de ant. Finalmente, devuelve el nodo creado. 
+    private Nodo<T> raiz = new Nodo<>('\0'); // raiz es el caracter nulo de ascii (preguntar si tiene que valer esto o null)
     
-    que pasa si hay una promo "PROMO" y otra "PROMOCION". donde termina promo y donde empieza "ocion"*/
     private Nodo<T> definirAux(Nodo<T> actual, char c) {
         Nodo<T> anterior = null;
         Nodo<T> hijo = actual.hijo;
@@ -53,9 +48,12 @@ public class Trie<T> {
         for (int i = 0; i < palabra.length(); i++) {
             char c = palabra.charAt(i);
             Nodo<T> hijo = actual.hijo;
-            while (hijo.c != c) {
+            while (hijo != null && hijo.c != c ) { // avanza mientras haya hermanos (no null) y no sea el buscado
                 hijo = hijo.hermano;
             } 
+            if (hijo == null) { // se recorrieron todos los hermanos sin encontrar c (el prefijo no existe)
+                return null;
+            }
             actual = hijo.c == c ? hijo : null;
         }
 
@@ -64,8 +62,8 @@ public class Trie<T> {
     
     public T obtener(String palabra) {
         Nodo<T> nodo = obtenerAux(palabra);
-        if (nodo == null) {
-            throw new Error("no existe la palabra");
+        if (nodo == null || nodo.valor == null) { // recordemos que si encontramos la palabra pero nodo.valor es null entonces es una palabra que nunca "definimos"
+            throw new Error("no existe la palabra"); // simplemente esta por ser prefijo de una palabra que si definimos en el trie.
         }
         return nodo.valor;
     }
