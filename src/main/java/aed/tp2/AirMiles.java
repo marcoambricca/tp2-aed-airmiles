@@ -1,10 +1,9 @@
 package aed.tp2;
 
-import java.util.ArrayList;
+import java.util.ArrayList; // FALTA PASAR EL STRESS TEST !!!!!!!!!! REVISAR MAÑANA
 import java.util.Comparator;
 
 public class AirMiles implements SistemaAirMiles {
-    /* COMPLETAR */
     private DiccionarioABB<Integer, Handle<Usuario>> usuarios;
     private MaxHeap<Usuario> rankingMillas;
     private Usuario masCanjeador;
@@ -61,8 +60,8 @@ public class AirMiles implements SistemaAirMiles {
     public void acumularMillas(int id, double distancia, String nombre) {
         Promocion promo = promociones.obtener(nombre);
         if (promo == null){
-            promo = promociones.obtener("NoPromo");
-        }
+            promo = promociones.obtener("NoPromo"); // si no existe el nombre de la promocion o la eliminamos (y por lo tanto deja de existir)
+        }                                                   // entonces le damos nopromo, que basicamente tiene factor 1 y sin tope (es como no usar ninguna promo)
         Handle<Usuario> handleUsuario = buscarUsuario(id);
         Usuario u = handleUsuario.valor();
         // si tope es -1 es que es promocion sin tope
@@ -208,7 +207,7 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public void finalizarPromocion(String nombre) {
-        this.promociones.borrar(nombre);
+        this.promociones.borrar(nombre); // elimina del trie y luego utiliza no promo
     }
 
     public int elMasAcumulador() {

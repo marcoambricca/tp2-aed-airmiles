@@ -12,7 +12,7 @@ public class Trie<T> {
         }
 
     }
-    private Nodo raiz = new Nodo('\0'); // raiz es el caracter nulo de ascii (preguntar si tiene que valer esto o null)
+    private Nodo raiz = new Nodo('\0'); // raiz es el caracter nulo de ascii 
     
     private Nodo definirAux(Nodo actual, char c) {
         Nodo anterior = null;
@@ -63,7 +63,7 @@ public class Trie<T> {
     public T obtener(String palabra) {
         Nodo nodo = obtenerAux(palabra);
         if (nodo == null || nodo.valor == null) { // recordemos que si encontramos la palabra pero nodo.valor es null entonces es una palabra que nunca "definimos"
-            throw new Error("no existe la palabra"); // simplemente esta por ser prefijo de una palabra que si definimos en el trie.
+            return null; // simplemente esta por ser prefijo de una palabra que si definimos en el trie.
         }
         return nodo.valor;
     }
@@ -74,7 +74,7 @@ public class Trie<T> {
 
     private Nodo borrarAux(Nodo actualHermano, String palabra, int indice) {
         if (actualHermano == null) { //este if se cubre si el hijo es null
-            throw new Error("no existe la palabra");
+            return null;
         }
         char c = palabra.charAt(indice);
         Nodo hermanoAnterior = null;
@@ -85,13 +85,13 @@ public class Trie<T> {
         }
 
         if (nodo == null) {
-            throw new Error("no existe la palabra"); //xq no existe la palabra
+            return null; //xq no existe la palabra
         }
 
 
         if (indice == palabra.length() - 1) {
             if (nodo.valor == null) {
-                throw new Error ("no existe la palabra"); //la palabra "existe" como prefijo (pero no es una palabra con valor)
+                return null; //la palabra "existe" como prefijo (pero no es una palabra con valor)
             }
             nodo.valor = null;
         } else {
@@ -108,4 +108,5 @@ public class Trie<T> {
 
         return actualHermano;
     }
+
 }
