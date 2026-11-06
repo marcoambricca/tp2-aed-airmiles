@@ -5,14 +5,14 @@ import java.util.Comparator;
 
 public class AirMiles implements SistemaAirMiles {
     /* COMPLETAR */
-    private ABB<Usuario> usuarios;
+    private DiccionarioABB<Integer, Handle<Usuario>> usuarios;
     private MaxHeap<Usuario> rankingMillas;
     private Usuario masCanjeador;
     private Usuario masAcumulador;
     private Trie<Promocion> promociones;
 
     public AirMiles() {
-        this.usuarios = new ABB<>();
+        this.usuarios = new DiccionarioABB<Integer, Handle<Usuario>>();
         this.rankingMillas = new MaxHeap<>(new PorMillasDisponibles());
         this.masCanjeador = null;
         this.masAcumulador = null;
@@ -30,8 +30,8 @@ public class AirMiles implements SistemaAirMiles {
 
     public void registrarUsuario(int id) {
         Usuario nuevo = new Usuario(id);
-        this.usuarios.insertar(nuevo);
-        this.rankingMillas.encolar(nuevo);
+        Handle<Usuario> h = this.rankingMillas.encolar(nuevo);
+        this.usuarios.insertar(id, h);
         if (this.masAcumulador == null) {
             this.masAcumulador = nuevo;
         }
@@ -41,26 +41,34 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public void registrarUsuarioConReferidor(int id, int ref) {
-        Usuario nuevo = new Usuario(id);
-        nuevo.setMillasDisponibles(500);
-        Usuario referidor = buscarUsuario(ref);
-        referidor.setMillasDisponibles(500);
-        this.usuarios.insertar(nuevo);
-        this.rankingMillas.encolar(nuevo);
-        rankingMillas.actualizar();
+        registrarUsuario(id);
+
+        Handle<Usuario> nuevo = buscarUsuario(id);
+        nuevo.valor().setMillasDisponibles(500);
+        nuevo.valor().setMillasAcumuladas(500);
+        nuevo.modificar(nuevo.valor()); //reacomodo heap
+
+        Handle<Usuario> referidor = buscarUsuario(ref);
+        referidor.valor().setMillasDisponibles(500);
+        referidor.valor().setMillasAcumuladas(500);
+        referidor.modificar(referidor.valor()); //reacomodo heap
     }
 
-    private Usuario buscarUsuario(int id) { // PREGUNTAR SI ES VALIDO
-        Usuario u = new Usuario(id);
-        return usuarios.obtener(u);
+    private Handle<Usuario> buscarUsuario(int id) {
+        return usuarios.obtener(id);
     }
 
     public void acumularMillas(int id, double distancia, String nombre) {
         Promocion promo = promociones.obtener(nombre);
-        Usuario u = buscarUsuario(id);
+        if (promo == null){
+            promo = promociones.obtener("NoPromo");
+        }
+        Handle<Usuario> handleUsuario = buscarUsuario(id);
+        Usuario u = handleUsuario.valor();
         // si tope es -1 es que es promocion sin tope
         if (promo.getTope() == -1) {
             u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
+            u.setMillasAcumuladas(distancia * promo.getFactor() * categoriaFactor(id));
         }
         // si tope no es -1 es que es promocion con tope
         else {
@@ -68,10 +76,13 @@ public class AirMiles implements SistemaAirMiles {
             // distancia sin factor
             if (distancia * promo.getFactor() > promo.getTope()) {
                 u.setMillasDisponibles(distancia * categoriaFactor(id));
-                // si la cantidad de millas que se acumularian es menor o igual al tope, se
-                // acumula la distancia con factor y se descuenta del tope
-            } else if (distancia * promo.getFactor() <= promo.getTope()) {
+                u.setMillasAcumuladas(distancia * categoriaFactor(id));
+            } 
+            // si la cantidad de millas que se acumularian es menor o igual al tope, se
+            // acumula la distancia con factor y se descuenta del tope
+            else if (distancia * promo.getFactor() <= promo.getTope()) {
                 u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
+                u.setMillasAcumuladas(distancia * promo.getFactor() * categoriaFactor(id));
                 promo.setTope(promo.getTope() - distancia * promo.getFactor() * categoriaFactor(id));
             }
         }
@@ -79,51 +90,75 @@ public class AirMiles implements SistemaAirMiles {
         if (this.masAcumulador == null || u.getMillasDisponibles() > this.masAcumulador.getMillasDisponibles()) {
             this.masAcumulador = u;
         }
-        // esto es asi o deberia haber una funcion de rebalanceo universal que uso
-        // cuando actualizo algun elemento?
-        rankingMillas.actualizar();
+
+        handleUsuario.modificar(u);
     }
 
     public void canjearMillas(int id, double cantidad) {
-        Usuario u = buscarUsuario(id);
+        Handle<Usuario> handleUsuario = buscarUsuario(id);
+        Usuario u = handleUsuario.valor();
         u.setMillasDisponibles(-(cantidad));
         u.setMillasCanjeadas(cantidad);
         if (this.masCanjeador == null || u.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
             this.masCanjeador = u;
         }
-        rankingMillas.actualizar();
+
+        handleUsuario.modificar(u); //reacomodo heap
     }
 
     public void transferirMillas(int origen, int destino, double cantidad) {
-        Usuario uOrigen = buscarUsuario(origen);
-        Usuario uDestino = buscarUsuario(destino);
+        Handle<Usuario> handleUOrigen = buscarUsuario(origen);
+        Handle<Usuario> handleUDestino = buscarUsuario(destino);
+        Usuario uOrigen = handleUOrigen.valor();
+        Usuario uDestino = handleUDestino.valor();
         uOrigen.setMillasDisponibles(-cantidad);
+        handleUOrigen.modificar(uOrigen); //reacomodo heap
         uOrigen.setMillasCanjeadas(cantidad);
         if (this.masCanjeador == null || uOrigen.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
             this.masCanjeador = uOrigen;
         }
-
-        if (uOrigen.esExclusivo == false) {
-            if (uOrigen.exclusivo == null) {
+        //origen no tiene exclusivo
+        if (uOrigen.exclusivo == null){
+            //destino no tiene exclusivo y se vuelven exclusivos mutuos
+            if (uDestino.exclusivo == null){
                 uOrigen.exclusivo = uDestino;
                 uOrigen.esExclusivo = true;
+    
+                uDestino.esExclusivo = true;
+                uDestino.exclusivo = uOrigen;
             }
-        } else {
-            if (uOrigen.exclusivo != uDestino) {
-                uOrigen.esExclusivo = false;
+            //destino ya tiene un exclusivo, le saco el esExclusivo
+            else{
                 uDestino.esExclusivo = false;
             }
         }
+        //origen tiene exclusivo
+        else{
+            //si destino no es exclusivo de origen, se rompen ambos esExclusivo porque uno envio a otro y el otro recibio de otro.
+            //tambien se rompe el exclusivo de los que eran previamente exclusivos de origen y destino.
+            if (uOrigen.exclusivo != uDestino){
+                uOrigen.esExclusivo = false;
+                uDestino.esExclusivo = false;
+                if (uOrigen.exclusivo != null){
+                    Handle<Usuario> exclusivoOrigen = buscarUsuario(uOrigen.exclusivo.getId());
+                    exclusivoOrigen.valor().esExclusivo = false;
+                }
+                if (uDestino.exclusivo != null){
+                    Handle<Usuario> exclusivoDestino = buscarUsuario(uDestino.exclusivo.getId());
+                    exclusivoDestino.valor().esExclusivo = false;
+                }
+            }
+        }
         uDestino.setMillasDisponibles(cantidad);
-        rankingMillas.actualizar();
+        handleUDestino.modificar(uDestino); //reacomodo heap
     }
 
     public double consultarSaldo(int id) {
-        return buscarUsuario(id).getMillasDisponibles();
+        return buscarUsuario(id).valor().getMillasDisponibles();
     }
 
     public String consultarCategoria(int id) {
-        double millas = buscarUsuario(id).getMillasDisponibles();
+        double millas = buscarUsuario(id).valor().getMillasAcumuladas();
 
         if (millas < 10000)
             return "Bronce";
@@ -187,10 +222,11 @@ public class AirMiles implements SistemaAirMiles {
     public int[][] paresTransferidoresExclusivos() {
         ArrayList<int[]> paresaux = new ArrayList<int[]>();
 
-        ABB<Usuario>.ABB_Iterador it = this.usuarios.iterador();
+        DiccionarioABB<Integer, Handle<Usuario>>.DiccionarioABB_Iterador it = this.usuarios.iterador();
 
         while (it.haySiguiente()) {
-            Usuario u = it.siguiente();
+            Handle<Usuario> handleU = it.siguiente();
+            Usuario u = handleU.valor();
 
             if (u.esExclusivo) {
                 Usuario u2 = u.exclusivo;
