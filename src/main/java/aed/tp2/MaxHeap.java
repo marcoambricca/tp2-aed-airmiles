@@ -3,7 +3,7 @@ package aed.tp2;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class MaxHeap<T> {
+public class MaxHeap<T extends Comparable<T>> {
     private ArrayList<T> _heap;
     private Comparator<T> _cmp;
 
@@ -12,13 +12,45 @@ public class MaxHeap<T> {
         this._cmp = cmp;
     }
 
-    public void encolar(T elem) {
-        _heap.add(elem);
-        reordenarHeapUp();
+    private class HandleMH implements Handle<T>{
+        /*Completar con los atributos privados*/
+        private T _ref;
+
+        private HandleMH(T n){
+            this._ref = n;
+        }
+
+        public T valor(){
+            return _ref;
+        }
+
+        public void modificar(T v){
+            reordenarHeapUp();
+            bajarIesiemo(_heap.indexOf(v));
+        }
+
+        public void eliminar(){}
+
+        public boolean equals(Handle<T> otro){
+            return _ref == otro.valor();
+        }
+        
+        public int compareTo(Handle<T> otro){
+            return _ref.compareTo(otro.valor());
+        }
+
+        public String toString(){
+            return _ref.toString();
+        }
     }
 
-    public void actualizar() {
+    public HandleMH encolar(T elem) {
+        HandleMH nuevo = new HandleMH(elem);
+        _heap.add(elem);
         reordenarHeapUp();
+        bajarIesiemo(_heap.size()-1);
+
+        return nuevo;
     }
 
     private void reordenarHeapUp() {
