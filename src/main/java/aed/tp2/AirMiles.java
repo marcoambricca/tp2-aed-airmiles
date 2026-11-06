@@ -3,8 +3,6 @@ package aed.tp2;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import aed.tp2.ABB.ABB_Iterador;
-
 public class AirMiles implements SistemaAirMiles {
     /*COMPLETAR*/
     private ABB<Usuario> usuarios;
