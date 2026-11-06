@@ -47,6 +47,7 @@ public class AirMiles implements SistemaAirMiles {
         referidor.setMillasDisponibles(500);
         this.usuarios.insertar(nuevo);
         this.rankingMillas.encolar(nuevo);
+        rankingMillas.actualizar();
     }
 
     private Usuario buscarUsuario(int id) { // PREGUNTAR SI ES VALIDO
@@ -73,11 +74,6 @@ public class AirMiles implements SistemaAirMiles {
                 u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
                 promo.setTope(promo.getTope() - distancia * promo.getFactor() * categoriaFactor(id));
             }
-
-            // veo luego de acumular si no queda tope y en ese caso borro la promocion
-            if (promo.getTope() == 0) {
-                this.finalizarPromocion(nombre);
-            }
         }
         // logica mas acumulador
         if (this.masAcumulador == null || u.getMillasDisponibles() > this.masAcumulador.getMillasDisponibles()) {
@@ -95,6 +91,7 @@ public class AirMiles implements SistemaAirMiles {
         if (this.masCanjeador == null || u.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
             this.masCanjeador = u;
         }
+        rankingMillas.actualizar();
     }
 
     public void transferirMillas(int origen, int destino, double cantidad) {
@@ -114,9 +111,11 @@ public class AirMiles implements SistemaAirMiles {
         } else {
             if (uOrigen.exclusivo != uDestino) {
                 uOrigen.esExclusivo = false;
+                uDestino.esExclusivo = false;
             }
         }
         uDestino.setMillasDisponibles(cantidad);
+        rankingMillas.actualizar();
     }
 
     public double consultarSaldo(int id) {
@@ -147,16 +146,17 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public int[] rankingMillas(int n) {
-        int[] ranking = new int[n];
-        Usuario[] aux = new Usuario[n];
+        int largo = rankingMillas.tamano() < n ? rankingMillas.tamano() : n;
+        int[] ranking = new int[largo];
+        Usuario[] aux = new Usuario[largo];
         // los saco para armar el ranking
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < largo; i++) {
             Usuario u = rankingMillas.desencolarMax();
             ranking[i] = u.getId();
             aux[i] = u;
         }
         // los vuelvo a encolar para no perder el ranking
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < largo; i++) {
             rankingMillas.encolar(aux[i]);
         }
         return ranking;

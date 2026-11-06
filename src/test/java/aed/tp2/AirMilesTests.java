@@ -324,7 +324,7 @@ public class AirMilesTests {
         assertEquals(5, top.length);
         assertTrue((top[0] == 2 && top[1] == 4) || (top[0] == 4 && top[1] == 2));
     }
-
+    /* */
     @Test
     void variosParesExclusivos() {
         for (int id = 1; id <= 6; id++) am.registrarUsuario(id);
