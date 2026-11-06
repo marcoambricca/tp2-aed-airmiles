@@ -105,6 +105,17 @@ public class AirMiles implements SistemaAirMiles {
         if (this.masCanjeador == null || uOrigen.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
             this.masCanjeador = uOrigen;
         }
+
+        if (uOrigen.esExclusivo == false) {
+            if (uOrigen.exclusivo == null) {
+                uOrigen.exclusivo = uDestino;
+                uOrigen.esExclusivo = true;
+            }
+        } else {
+            if (uOrigen.exclusivo != uDestino) {
+                uOrigen.esExclusivo = false;
+            }
+        }
         uDestino.setMillasDisponibles(cantidad);
     }
 
