@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 public class AirMiles implements SistemaAirMiles {
-    /*COMPLETAR*/
+    /* COMPLETAR */
     private ABB<Usuario> usuarios;
     private MaxHeap<Usuario> rankingMillas;
     private Usuario masCanjeador;
@@ -16,18 +16,28 @@ public class AirMiles implements SistemaAirMiles {
         this.rankingMillas = new MaxHeap<>(new PorMillasDisponibles());
         this.masCanjeador = null;
         this.masAcumulador = null;
-        this.promociones = new Trie<>();
+        this.promociones = new Trie<>(); // hay que agregar la promocion NoPromo, fact 1.
+        promociones.definir("NoPromo", new Promocion("NoPromo", 1, -1));
     }
 
-    //esto va aca?
-    private class PorMillasDisponibles implements Comparator<Usuario>{
+    // esto va aca?
+    private class PorMillasDisponibles implements Comparator<Usuario> {
         @Override
-        public int compare(Usuario a, Usuario b) {return Double.compare(a.getMillasDisponibles(), b.getMillasDisponibles());}
+        public int compare(Usuario a, Usuario b) {
+            return Double.compare(a.getMillasDisponibles(), b.getMillasDisponibles());
+        }
     }
 
     public void registrarUsuario(int id) {
         Usuario nuevo = new Usuario(id);
         this.usuarios.insertar(nuevo);
+        this.rankingMillas.encolar(nuevo);
+        if (this.masAcumulador == null) {
+            this.masAcumulador = nuevo;
+        }
+        if (this.masCanjeador == null) {
+            this.masCanjeador = nuevo;
+        }
     }
 
     public void registrarUsuarioConReferidor(int id, int ref) {
@@ -36,9 +46,10 @@ public class AirMiles implements SistemaAirMiles {
         Usuario referidor = buscarUsuario(ref);
         referidor.setMillasDisponibles(500);
         this.usuarios.insertar(nuevo);
+        this.rankingMillas.encolar(nuevo);
     }
 
-    private Usuario buscarUsuario(int id){ // PREGUNTAR SI ES VALIDO
+    private Usuario buscarUsuario(int id) { // PREGUNTAR SI ES VALIDO
         Usuario u = new Usuario(id);
         return usuarios.obtener(u);
     }
@@ -46,30 +57,35 @@ public class AirMiles implements SistemaAirMiles {
     public void acumularMillas(int id, double distancia, String nombre) {
         Promocion promo = promociones.obtener(nombre);
         Usuario u = buscarUsuario(id);
-        //si tope es -1 es que es promocion sin tope
+        // si tope es -1 es que es promocion sin tope
         if (promo.getTope() == -1) {
-            u.setMillasDisponibles(distancia * promo.getFactor());
-        } 
-        //si tope no es -1 es que es promocion con tope
+            u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
+        }
+        // si tope no es -1 es que es promocion con tope
         else {
-            //si la cantidad de millas que se acumularian es mayor al tope, se acumula la distancia sin factor
+            // si la cantidad de millas que se acumularian es mayor al tope, se acumula la
+            // distancia sin factor
             if (distancia * promo.getFactor() > promo.getTope()) {
-                u.setMillasDisponibles(distancia);
-            //si la cantidad de millas que se acumularian es menor o igual al tope, se acumula la distancia con factor y se descuenta del tope
+                u.setMillasDisponibles(distancia * categoriaFactor(id));
+                // si la cantidad de millas que se acumularian es menor o igual al tope, se
+                // acumula la distancia con factor y se descuenta del tope
             } else if (distancia * promo.getFactor() <= promo.getTope()) {
-                u.setMillasDisponibles(distancia * promo.getFactor());
-                promo.setTope(promo.getTope() - distancia * promo.getFactor());
+                u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
+                promo.setTope(promo.getTope() - distancia * promo.getFactor() * categoriaFactor(id));
             }
 
-            //veo luego de acumular si no queda tope y en ese caso borro la promocion
-            if (promo.getTope() == 0){
+            // veo luego de acumular si no queda tope y en ese caso borro la promocion
+            if (promo.getTope() == 0) {
                 this.finalizarPromocion(nombre);
             }
         }
-        //logica mas acumulador
+        // logica mas acumulador
         if (this.masAcumulador == null || u.getMillasDisponibles() > this.masAcumulador.getMillasDisponibles()) {
             this.masAcumulador = u;
         }
+        // esto es asi o deberia haber una funcion de rebalanceo universal que uso
+        // cuando actualizo algun elemento?
+        rankingMillas.actualizar();
     }
 
     public void canjearMillas(int id, double cantidad) {
@@ -93,25 +109,44 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public double consultarSaldo(int id) {
-        Usuario u = new Usuario(id);
-        return u.getMillasDisponibles();
+        return buscarUsuario(id).getMillasDisponibles();
     }
 
     public String consultarCategoria(int id) {
-       Usuario u = new Usuario(id);
-       double millas = u.getMillasDisponibles();
+        double millas = buscarUsuario(id).getMillasDisponibles();
 
-       if (millas < 10000) return "Bronce";
-        if (millas < 50000) return "Plata";
-         if (millas < 1000000) return "Oro";
+        if (millas < 10000)
+            return "Bronce";
+        if (millas < 50000)
+            return "Plata";
+        if (millas < 1000000)
+            return "Oro";
         return "Platino";
+    }
+
+    public double categoriaFactor(int id) {
+        String categoria = consultarCategoria(id);
+        if (categoria == "Bronce")
+            return 1;
+        if (categoria == "Plata")
+            return 1.5;
+        if (categoria == "Oro")
+            return 2;
+        return 0;
     }
 
     public int[] rankingMillas(int n) {
         int[] ranking = new int[n];
+        Usuario[] aux = new Usuario[n];
+        // los saco para armar el ranking
         for (int i = 0; i < n; i++) {
             Usuario u = rankingMillas.desencolarMax();
             ranking[i] = u.getId();
+            aux[i] = u;
+        }
+        // los vuelvo a encolar para no perder el ranking
+        for (int i = 0; i < n; i++) {
+            rankingMillas.encolar(aux[i]);
         }
         return ranking;
     }
@@ -148,10 +183,8 @@ public class AirMiles implements SistemaAirMiles {
 
             if (u.esExclusivo) {
                 Usuario u2 = u.exclusivo;
-                if (u2.esExclusivo && u2.exclusivo == u) {
-                    if (u.getId() < u2.getId()) {
-                            paresaux.add(new int[]{u.getId(), u2.getId()});
-                        }
+                if (u.getId() < u2.getId()) {
+                    paresaux.add(new int[] { u.getId(), u2.getId() });
                 }
             }
         }

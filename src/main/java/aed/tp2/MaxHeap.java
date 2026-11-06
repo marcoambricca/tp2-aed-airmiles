@@ -17,6 +17,10 @@ public class MaxHeap<T> {
         reordenarHeapUp();
     }
 
+    public void actualizar() {
+        reordenarHeapUp();
+    }
+
     private void reordenarHeapUp() {
         int i = _heap.size() - 1;
         while (i > 0) {
@@ -61,11 +65,10 @@ public class MaxHeap<T> {
     public T desencolarMax() {
         T res = null;
         if (!(_heap.isEmpty())){
-            int ultimo = _heap.size() - 1;
-            res = _heap.get(ultimo);
-            _heap.set(0, res);
-            _heap.remove(ultimo);
+            res = _heap.get(0);
+            _heap.set(0, _heap.get(_heap.size() - 1));
             bajarIesiemo(0);
+            _heap.remove(_heap.size() - 1);
         }
 
         return res;

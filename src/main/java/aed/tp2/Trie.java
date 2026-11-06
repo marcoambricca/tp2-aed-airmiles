@@ -1,107 +1,111 @@
 package aed.tp2;
 
 public class Trie<T> {
-    private static class Nodo<T> {
+    private class Nodo {
         char c;
-        T valor; // null = ninguna clave termina aca
-        Nodo<T> hijo; // primer hijo
-        Nodo<T> hermano; // siguiente hermano
+        T valor;
+        Nodo hijo;
+        Nodo hermano;
 
         Nodo(char c) {
             this.c = c;
         }
+
     }
-
-    private Nodo<T> raiz = new Nodo<>('\0');
-    private int tamaño = 0;
-
-    // Busca el hijo con la letra c y si no existe, lo crea en orden
-    private Nodo<T> obtenerOCrearHijo(Nodo<T> padre, char c) {
-        Nodo<T> ant = null;
-        Nodo<T> h = padre.hijo;
-        while (h != null && h.c < c) {
-            ant = h;
-            h = h.hermano;
+    private Nodo raiz = new Nodo('\0'); // raiz es el caracter nulo de ascii (preguntar si tiene que valer esto o null)
+    
+    private Nodo definirAux(Nodo actual, char c) {
+        Nodo anterior = null;
+        Nodo hijo = actual.hijo;
+        while (hijo != null && hijo.c != c) {
+          anterior = hijo;
+          hijo = hijo.hermano;  
         }
-        if (h != null && h.c == c)
-            return h;
-
-        Nodo<T> nuevo = new Nodo<>(c);
-        nuevo.hermano = h;
-        if (ant == null)
-            padre.hijo = nuevo;
-        else
-            ant.hermano = nuevo;
-        return nuevo;
-    }
-
-    private Nodo<T> buscarNodo(String clave) {
-        Nodo<T> nodo = raiz;
-        for (int i = 0; i < clave.length() && nodo != null; i++) {
-            char c = clave.charAt(i);
-            Nodo<T> h = nodo.hijo;
-            while (h != null && h.c < c)
-                h = h.hermano;
-            nodo = (h != null && h.c == c) ? h : null;
+        if (hijo != null && hijo.c == c) {
+            return hijo;}
+        else {
+            Nodo nuevo = new Nodo(c);
+            if (anterior == null) {
+                actual.hijo = nuevo;
+            } else {
+                anterior.hermano = nuevo;
+            }  
+            return nuevo;
         }
-        return nodo;
     }
 
-    public void definir(String clave, T valor) {
-        Nodo<T> nodo = raiz;
-        for (int i = 0; i < clave.length(); i++) {
-            nodo = obtenerOCrearHijo(nodo, clave.charAt(i));
+    public void definir(String palabra, T valor) {
+        Nodo actual = raiz;
+        for (int i = 0; i < palabra.length(); i++) {
+            actual = definirAux(actual, palabra.charAt(i));      
         }
-        if (nodo.valor == null)
-            tamaño++;
-        nodo.valor = valor;
+        actual.valor = valor;
     }
 
-    public T obtener(String clave) {
-        Nodo<T> n = buscarNodo(clave);
-        return (n == null) ? null : n.valor;
+    private Nodo obtenerAux(String palabra){
+        Nodo actual = raiz;
+
+        for (int i = 0; i < palabra.length(); i++) {
+            char c = palabra.charAt(i);
+            Nodo hijo = actual.hijo;
+            while (hijo != null && hijo.c != c) { // avanza mientras haya hermanos (no null) y no sea el buscado
+                hijo = hijo.hermano;
+            } 
+            if (hijo == null) { // se recorrieron todos los hermanos sin encontrar c (el prefijo no existe)
+                return null;
+            }
+            actual = hijo.c == c ? hijo : null;
+        }
+
+        return actual;
+    }
+    
+    public T obtener(String palabra) {
+        Nodo nodo = obtenerAux(palabra);
+        if (nodo == null || nodo.valor == null) { // recordemos que si encontramos la palabra pero nodo.valor es null entonces es una palabra que nunca "definimos"
+            throw new Error("no existe la palabra"); // simplemente esta por ser prefijo de una palabra que si definimos en el trie.
+        }
+        return nodo.valor;
     }
 
-    public boolean esta(String clave) {
-        return obtener(clave) != null;
+    public void borrar(String palabra) {
+        raiz.hijo = borrarAux(raiz.hijo, palabra, 0);
     }
 
-    public boolean borrar(String clave) {
-        Nodo<T> n = buscarNodo(clave);
-        if (n == null || n.valor == null)
-            return false; // no estaba
-        borrarRecursivo(raiz, clave, 0);
-        tamaño--;
-        return true;
-    }
+    private Nodo borrarAux(Nodo actualHermano, String palabra, int indice) {
+        if (actualHermano == null) { //este if se cubre si el hijo es null
+            throw new Error("no existe la palabra");
+        }
+        char c = palabra.charAt(indice);
+        Nodo hermanoAnterior = null;
+        Nodo nodo = actualHermano;
+        while (nodo != null && nodo.c != c) {
+            hermanoAnterior = nodo;
+            nodo = nodo.hermano;
+        }
 
-    // Devuelve true si 'nodo' quedó sin valor y sin hijos (el padre lo puede sacar)
-    private boolean borrarRecursivo(Nodo<T> nodo, String clave, int i) {
-        if (i == clave.length()) {
-            nodo.valor = null; // caso base: llegamos al final
+        if (nodo == null) {
+            throw new Error("no existe la palabra"); //xq no existe la palabra
+        }
+
+
+        if (indice == palabra.length() - 1) {
+            if (nodo.valor == null) {
+                throw new Error ("no existe la palabra"); //la palabra "existe" como prefijo (pero no es una palabra con valor)
+            }
+            nodo.valor = null;
         } else {
-            char c = clave.charAt(i);
+            nodo.hijo = borrarAux(nodo.hijo, palabra, indice + 1);
+        }
 
-            // buscar el hijo con la letra c, recordando el hermano anterior
-            Nodo<T> ant = null;
-            Nodo<T> h = nodo.hijo;
-            while (h.c != c) { // existe seguro: ya lo verificó borrar()
-                ant = h;
-                h = h.hermano;
-            }
-
-            if (borrarRecursivo(h, clave, i + 1)) {
-                // desenganchar h de la lista de hermanos
-                if (ant == null)
-                    nodo.hijo = h.hermano;
-                else
-                    ant.hermano = h.hermano;
+        if (nodo.valor == null && nodo.hijo == null) {
+            if (hermanoAnterior == null) {
+                actualHermano = nodo.hermano;
+            } else {
+                hermanoAnterior.hermano = nodo.hermano;
             }
         }
-        return nodo.valor == null && nodo.hijo == null;
-    }
 
-    public int tamaño() {
-        return tamaño;
+        return actualHermano;
     }
 }

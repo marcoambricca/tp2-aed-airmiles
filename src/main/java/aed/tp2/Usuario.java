@@ -3,6 +3,7 @@ package aed.tp2;
 public class Usuario implements Comparable<Usuario> {
     private int id;
     private double millasDisponibles, millasAcumuladas, millasCanjeadas;
+    private int indice;
 
     Usuario exclusivo;
     boolean esExclusivo;
@@ -62,5 +63,13 @@ public class Usuario implements Comparable<Usuario> {
 
     public int compareTo(Usuario otro) {
         return Integer.compare(this.id, otro.id);
+    }
+
+    public void setIndice(int indice) {
+        this.indice = indice;
+    }
+
+    public int getIndice() {
+        return this.indice;
     }
 }
