@@ -1,6 +1,6 @@
 package aed.tp2;
 
-import java.util.ArrayList; // FALTA PASAR EL STRESS TEST !!!!!!!!!! REVISAR MAÑANA
+import java.util.ArrayList;
 import java.util.Comparator;
 
 public class AirMiles implements SistemaAirMiles {
@@ -15,7 +15,7 @@ public class AirMiles implements SistemaAirMiles {
         this.rankingMillas = new MaxHeap<>(new PorMillasDisponibles());
         this.masCanjeador = null;
         this.masAcumulador = null;
-        this.promociones = new Trie<>(); // hay que agregar la promocion NoPromo, fact 1.
+        this.promociones = new Trie<>();
         promociones.definir("NoPromo", new Promocion("NoPromo", 1, -1));
     }
 
@@ -63,21 +63,19 @@ public class AirMiles implements SistemaAirMiles {
             promo = promociones.obtener("NoPromo"); // si no existe el nombre de la promocion o la eliminamos (y por lo tanto deja de existir)
         }                                                   // entonces le damos nopromo, que basicamente tiene factor 1 y sin tope (es como no usar ninguna promo)
         Handle<Usuario> handleUsuario = buscarUsuario(id);
-        Usuario u = handleUsuario.valor();
-        // si tope es -1 es que es promocion sin tope
-        if (promo.getTope() == -1) {
+        Usuario u = handleUsuario.valor(); 
+        if (promo.getTope() == -1) { // si tope es -1 es que es promocion sin tope
             u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
             u.setMillasAcumuladas(distancia * promo.getFactor() * categoriaFactor(id));
         }
-        // si tope no es -1 es que es promocion con tope
         else {
-            // si la cantidad de millas que se acumularian es mayor al tope, se acumula la
+            // si la cantidad de millas que se acumulan es mayor al tope, se acumula la
             // distancia sin factor
             if (distancia * promo.getFactor() > promo.getTope()) {
                 u.setMillasDisponibles(distancia * categoriaFactor(id));
                 u.setMillasAcumuladas(distancia * categoriaFactor(id));
             } 
-            // si la cantidad de millas que se acumularian es menor o igual al tope, se
+            // si la cantidad de millas que se acumulan es menor o igual al tope, se
             // acumula la distancia con factor y se descuenta del tope
             else if (distancia * promo.getFactor() <= promo.getTope()) {
                 u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
@@ -86,7 +84,7 @@ public class AirMiles implements SistemaAirMiles {
             }
         }
         // logica mas acumulador
-        if (this.masAcumulador == null || u.getMillasDisponibles() > this.masAcumulador.getMillasDisponibles()) {
+        if (this.masAcumulador == null || u.getMillasAcumuladas() > this.masAcumulador.getMillasAcumuladas()) {
             this.masAcumulador = u;
         }
 
@@ -117,37 +115,29 @@ public class AirMiles implements SistemaAirMiles {
             this.masCanjeador = uOrigen;
         }
         //origen no tiene exclusivo
-        if (uOrigen.exclusivo == null){
-            //destino no tiene exclusivo y se vuelven exclusivos mutuos
-            if (uDestino.exclusivo == null){
-                uOrigen.exclusivo = uDestino;
-                uOrigen.esExclusivo = true;
-    
-                uDestino.esExclusivo = true;
-                uDestino.exclusivo = uOrigen;
-            }
+        if (uOrigen.exclusivo == null && uDestino.exclusivo == null){
+            uOrigen.exclusivo = uDestino;
+            uOrigen.esExclusivo = true;
+            uDestino.exclusivo = uOrigen;
+            uDestino.esExclusivo = true;
             //destino ya tiene un exclusivo, le saco el esExclusivo
-            else{
-                uDestino.esExclusivo = false;
-            }
         }
         //origen tiene exclusivo
-        else{
-            //si destino no es exclusivo de origen, se rompen ambos esExclusivo porque uno envio a otro y el otro recibio de otro.
-            //tambien se rompe el exclusivo de los que eran previamente exclusivos de origen y destino.
-            if (uOrigen.exclusivo != uDestino){
-                uOrigen.esExclusivo = false;
-                uDestino.esExclusivo = false;
-                if (uOrigen.exclusivo != null){
-                    Handle<Usuario> exclusivoOrigen = buscarUsuario(uOrigen.exclusivo.getId());
-                    exclusivoOrigen.valor().esExclusivo = false;
-                }
-                if (uDestino.exclusivo != null){
-                    Handle<Usuario> exclusivoDestino = buscarUsuario(uDestino.exclusivo.getId());
-                    exclusivoDestino.valor().esExclusivo = false;
-                }
+        else if (uOrigen.exclusivo == uDestino && uDestino.exclusivo == uOrigen){ //no pasa nada
+        } else { // se rompe
+            uOrigen.esExclusivo = false;
+            if (uOrigen.exclusivo != null){
+                uOrigen.exclusivo.esExclusivo = false;
+            } else {
+                uOrigen.exclusivo = uDestino; //para registrar
             }
-        }
+
+            uDestino.esExclusivo = false;
+            if (uDestino.exclusivo != null){
+                uDestino.exclusivo.esExclusivo = false;
+            } else {
+                uDestino.exclusivo = uOrigen; //para registrar
+            }}
         uDestino.setMillasDisponibles(cantidad);
         handleUDestino.modificar(uDestino); //reacomodo heap
     }
@@ -207,7 +197,7 @@ public class AirMiles implements SistemaAirMiles {
     }
 
     public void finalizarPromocion(String nombre) {
-        this.promociones.borrar(nombre); // elimina del trie y luego utiliza no promo
+        this.promociones.borrar(nombre); // elimina del trie y luego utiliza no promo (factor 1)
     }
 
     public int elMasAcumulador() {
@@ -227,7 +217,7 @@ public class AirMiles implements SistemaAirMiles {
             Handle<Usuario> handleU = it.siguiente();
             Usuario u = handleU.valor();
 
-            if (u.esExclusivo) {
+            if (u.esExclusivo && u.exclusivo != null && u.exclusivo.esExclusivo) {
                 Usuario u2 = u.exclusivo;
                 if (u.getId() < u2.getId()) {
                     paresaux.add(new int[] { u.getId(), u2.getId() });

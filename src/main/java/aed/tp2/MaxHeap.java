@@ -26,7 +26,7 @@ public class MaxHeap<T extends Comparable<T>> {
 
         public void modificar(T v){
             int indice = _heap.indexOf(v);
-            reordenarHeapUp(indice); // paso indice xq estaba mirando solo el ultimo elemento del heap. quiero ver el indice del elemento que se modifico, para reordenar el heap desde ahi.
+            indice = reordenarHeapUp(indice); // paso indice xq estaba mirando solo el ultimo elemento del heap. quiero ver el indice del elemento que se modifico, para reordenar el heap desde ahi.
             bajarIesiemo(indice);
         }
 
