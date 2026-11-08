@@ -164,7 +164,8 @@ public class DiccionarioABB<K extends Comparable<K>, V> {
                     sucesor = sucesor.l;
                 }
 
-                actual.valor = sucesor.valor; // cambio el dato del actual por el dato del sucesor
+                actual.clave = sucesor.clave;
+                actual.valor = sucesor.valor; // reemplazamos la raiz por su sucesor en orden
                 eliminar_aux(actual.r, sucesor.clave); // y agarro el sub-arbol de la derecha (que contiene a sucesor) y
                                                       // elimino ese sucesor recursivamente.
                 // acá _cardinal-- estaria demás xq al hacer eliminar_aux(actual.r,
