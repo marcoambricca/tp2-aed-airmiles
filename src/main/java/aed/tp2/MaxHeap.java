@@ -25,8 +25,9 @@ public class MaxHeap<T extends Comparable<T>> {
         }
 
         public void modificar(T v){
-            reordenarHeapUp();
-            bajarIesiemo(_heap.indexOf(v));
+            int indice = _heap.indexOf(v);
+            reordenarHeapUp(indice); // paso indice xq estaba mirando solo el ultimo elemento del heap. quiero ver el indice del elemento que se modifico, para reordenar el heap desde ahi.
+            bajarIesiemo(indice);
         }
 
         public void eliminar(){}
@@ -47,14 +48,14 @@ public class MaxHeap<T extends Comparable<T>> {
     public HandleMH encolar(T elem) {
         HandleMH nuevo = new HandleMH(elem);
         _heap.add(elem);
-        reordenarHeapUp();
-        bajarIesiemo(_heap.size()-1);
+        int indice = _heap.size()-1;
+        reordenarHeapUp(indice);
+        // bajarIesiemo(indice); !! acá saco esa xq ya lo agregué al final y no hace falta bajar, solo subir si necesario. (además, si lo reordeno, el ultimo elemento puede cambiar a otro, pero igual no hay que bajarlo a este otro...)
 
         return nuevo;
     }
 
-    private void reordenarHeapUp() {
-        int i = _heap.size() - 1;
+    private int reordenarHeapUp(int i) {
         while (i > 0) {
             int padreIndex = (i - 1) / 2;
             if (_cmp.compare(_heap.get(i), _heap.get(padreIndex)) > 0) {
@@ -66,6 +67,7 @@ public class MaxHeap<T extends Comparable<T>> {
                 break;
             }
         }
+    return i;
     }
 
     private void bajarIesiemo(int i) {
