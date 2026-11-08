@@ -114,15 +114,14 @@ public class AirMiles implements SistemaAirMiles {
         if (this.masCanjeador == null || uOrigen.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
             this.masCanjeador = uOrigen;
         }
-        //origen no tiene exclusivo
+        // origen y destino no tienen exclusivos:
         if (uOrigen.exclusivo == null && uDestino.exclusivo == null){
             uOrigen.exclusivo = uDestino;
             uOrigen.esExclusivo = true;
             uDestino.exclusivo = uOrigen;
             uDestino.esExclusivo = true;
-            //destino ya tiene un exclusivo, le saco el esExclusivo
         }
-        //origen tiene exclusivo
+
         else if (uOrigen.exclusivo == uDestino && uDestino.exclusivo == uOrigen){ //no pasa nada
         } else { // se rompe
             uOrigen.esExclusivo = false;
@@ -138,6 +137,7 @@ public class AirMiles implements SistemaAirMiles {
             } else {
                 uDestino.exclusivo = uOrigen; //para registrar
             }}
+            
         uDestino.setMillasDisponibles(cantidad);
         handleUDestino.modificar(uDestino); //reacomodo heap
     }
