@@ -19,7 +19,6 @@ public class AirMiles implements SistemaAirMiles {
         promociones.definir("NoPromo", new Promocion("NoPromo", 1, -1));
     }
 
-    // esto va aca?
     private class PorMillasDisponibles implements Comparator<Usuario> {
         @Override
         public int compare(Usuario a, Usuario b) {
@@ -64,23 +63,26 @@ public class AirMiles implements SistemaAirMiles {
         }                                                   // entonces le damos nopromo, que basicamente tiene factor 1 y sin tope (es como no usar ninguna promo)
         Handle<Usuario> handleUsuario = buscarUsuario(id);
         Usuario u = handleUsuario.valor(); 
+
+        double categoriaFactor = categoriaFactor(id);
+
         if (promo.getTope() == -1) { // si tope es -1 es que es promocion sin tope
-            u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
-            u.setMillasAcumuladas(distancia * promo.getFactor() * categoriaFactor(id));
+            u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor);
+            u.setMillasAcumuladas(distancia * promo.getFactor() * categoriaFactor);
         }
         else {
             // si la cantidad de millas que se acumulan es mayor al tope, se acumula la
             // distancia sin factor
             if (distancia * promo.getFactor() > promo.getTope()) {
-                u.setMillasDisponibles(distancia * categoriaFactor(id));
-                u.setMillasAcumuladas(distancia * categoriaFactor(id));
+                u.setMillasDisponibles(distancia * categoriaFactor);
+                u.setMillasAcumuladas(distancia * categoriaFactor);
             } 
             // si la cantidad de millas que se acumulan es menor o igual al tope, se
             // acumula la distancia con factor y se descuenta del tope
             else if (distancia * promo.getFactor() <= promo.getTope()) {
-                u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor(id));
-                u.setMillasAcumuladas(distancia * promo.getFactor() * categoriaFactor(id));
-                promo.setTope(promo.getTope() - distancia * promo.getFactor() * categoriaFactor(id));
+                u.setMillasDisponibles(distancia * promo.getFactor() * categoriaFactor);
+                u.setMillasAcumuladas(distancia * promo.getFactor() * categoriaFactor);
+                promo.setTope(promo.getTope() - distancia * promo.getFactor() * categoriaFactor);
             }
         }
         // logica mas acumulador
@@ -111,9 +113,12 @@ public class AirMiles implements SistemaAirMiles {
         uOrigen.setMillasDisponibles(-cantidad);
         handleUOrigen.modificar(uOrigen); //reacomodo heap
         uOrigen.setMillasCanjeadas(cantidad);
+
+        //logica mas canjeador
         if (this.masCanjeador == null || uOrigen.getMillasCanjeadas() > this.masCanjeador.getMillasCanjeadas()) {
             this.masCanjeador = uOrigen;
         }
+
         // origen y destino no tienen exclusivos:
         if (uOrigen.exclusivo == null && uDestino.exclusivo == null){
             uOrigen.exclusivo = uDestino;

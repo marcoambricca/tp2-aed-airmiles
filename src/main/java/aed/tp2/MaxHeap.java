@@ -67,7 +67,7 @@ public class MaxHeap<T extends Comparable<T>> {
                 break;
             }
         }
-    return i;
+        return i;
     }
 
     private void bajarIesiemo(int i) {
