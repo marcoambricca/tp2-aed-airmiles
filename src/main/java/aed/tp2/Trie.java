@@ -51,5 +51,33 @@ public class Trie<T> {
         borrarAux(raiz, palabra, 0);
     }  
 
-    
+    private boolean borrarAux(Nodo actual, String palabra, int indice) {
+        if (indice == palabra.length()) { //llega al final de la palabra
+            if (actual.valor == null) {
+                return false; //como nunca fue definida, no hay nada que borrar
+            }
+            actual.valor = null;
+        } else {
+            int car = palabra.charAt(indice);
+            if (actual.hijos[car] == null) {
+                return false; //este camino no existe y por lo tanto la palabra no esta en el trie 
+            }
+            Nodo hijo = (Nodo) actual.hijos[car];
+            boolean cortarHijo = borrarAux(hijo, palabra, indice + 1);
+            if (cortarHijo) {
+                actual.hijos[car] = null; //cortamos sin reconectar nada
+            }
+        }
+        return actual.valor == null && sinHijos(actual);
+    }
+
+    private boolean sinHijos(Nodo nodo) { //vaciamos a todos los hijos de actual
+        for (Object h : nodo.hijos) {
+            if (h != null) {
+                return false;
+            }
+        }
+        return true;
+    }
 }   
+
