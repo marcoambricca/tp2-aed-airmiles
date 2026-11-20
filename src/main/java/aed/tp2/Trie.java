@@ -1,112 +1,55 @@
 package aed.tp2;
 
 public class Trie<T> {
+
     private class Nodo {
-        char c;
         T valor;
-        Nodo hijo;
-        Nodo hermano;
+        Object[] hijos;
 
-        Nodo(char c) {
-            this.c = c;
-        }
-
+        Nodo() {
+            hijos = new Object[256]; //decimos que el array hijos asociado al nodo puede tener 256 elementos porque se condice con la cantidad de 
+        }                            //caracteres que tiene el ascii extendido. cada indice representa un caracter del ascii
+        
     }
-    private Nodo raiz = new Nodo('\0'); // raiz es el caracter nulo de ascii 
-    
-    private Nodo definirAux(Nodo actual, char c) {
-        Nodo anterior = null;
-        Nodo hijo = actual.hijo;
-        while (hijo != null && hijo.c != c) {
-          anterior = hijo;
-          hijo = hijo.hermano;  
-        }
-        if (hijo != null && hijo.c == c) {
-            return hijo;}
-        else {
-            Nodo nuevo = new Nodo(c);
-            if (anterior == null) {
-                actual.hijo = nuevo;
-            } else {
-                anterior.hermano = nuevo;
-            }  
-            return nuevo;
-        }
-    }
+ 
+    private Nodo raiz = new Nodo();
 
-    public void definir(String palabra, T valor) {
+    public void definir (String palabra, T valor) { //vamos a recorrer la palabra y si esta vacia esa posicion del array agregamos ese caracter en ella
         Nodo actual = raiz;
         for (int i = 0; i < palabra.length(); i++) {
-            actual = definirAux(actual, palabra.charAt(i));      
+            int car = palabra.charAt(i); //en vez de devolver un caracter el charAt devuelve un int que se corresponde con ese caracter en ascii 
+            if (actual.hijos[car] == null) {
+                actual.hijos[car] = new Nodo();
+            }
+            actual = (Nodo) actual.hijos[car]; //es necesario explicitar el tipo de dato porque sino no lo toma como Nodo
         }
         actual.valor = valor;
     }
 
-    private Nodo obtenerAux(String palabra){
-        Nodo actual = raiz;
-
-        for (int i = 0; i < palabra.length(); i++) {
-            char c = palabra.charAt(i);
-            Nodo hijo = actual.hijo;
-            while (hijo != null && hijo.c != c) { // avanza mientras haya hermanos (no null) y no sea el buscado
-                hijo = hijo.hermano;
-            } 
-            if (hijo == null) { // se recorrieron todos los hermanos sin encontrar c (el prefijo no existe)
+    private Nodo obtenerAux(String palabra) { //misma logica que la funcion anterior, solo que si no esta el caracter entonces devolvemos null
+        Nodo actual = raiz;                   //y si todos los caracteres estan entonces devolvemos el nodo
+        for (int i = 0; i < palabra.length(); i ++) {
+            int car = palabra.charAt(i);
+            if (actual.hijos[car] == null) {
                 return null;
             }
-            actual = hijo.c == c ? hijo : null;
+            actual = (Nodo) actual.hijos[car];
         }
-
         return actual;
-    }
     
+    }
+
     public T obtener(String palabra) {
         Nodo nodo = obtenerAux(palabra);
-        if (nodo == null || nodo.valor == null) { // recordemos que si encontramos la palabra pero nodo.valor es null entonces es una palabra que nunca "definimos"
-            return null; // simplemente esta por ser prefijo de una palabra que si definimos en el trie.
+        if (nodo == null || nodo.valor == null) { //devolvemos null (no esta la palabra) en el caso de que o bien no este 
+            return null;                          //o este pero sea un prefijo (y no una palabra definida)
         }
         return nodo.valor;
     }
 
     public void borrar(String palabra) {
-        raiz.hijo = borrarAux(raiz.hijo, palabra, 0);
-    }
+        borrarAux(raiz, palabra, 0);
+    }  
 
-    private Nodo borrarAux(Nodo actualHermano, String palabra, int indice) {
-        if (actualHermano == null) { //este if se cubre si el hijo es null
-            return null;
-        }
-        char c = palabra.charAt(indice);
-        Nodo hermanoAnterior = null;
-        Nodo nodo = actualHermano;
-        while (nodo != null && nodo.c != c) {
-            hermanoAnterior = nodo;
-            nodo = nodo.hermano;
-        }
-
-        if (nodo == null) {
-            return null; //xq no existe la palabra
-        }
-
-
-        if (indice == palabra.length() - 1) {
-            if (nodo.valor == null) {
-                return null; //la palabra "existe" como prefijo (pero no es una palabra con valor)
-            }
-            nodo.valor = null;
-        } else {
-            nodo.hijo = borrarAux(nodo.hijo, palabra, indice + 1);
-        }
-
-        if (nodo.valor == null && nodo.hijo == null) {
-            if (hermanoAnterior == null) {
-                actualHermano = nodo.hermano;
-            } else {
-                hermanoAnterior.hermano = nodo.hermano;
-            }
-        }
-
-        return actualHermano;
-    }
-
-}
+    
+}   
