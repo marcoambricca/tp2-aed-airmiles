@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 public class MaxHeap<T extends Comparable<T>> {
-    private ArrayList<T> _heap;
+    private ArrayList<HandleMH> _heap;
     private Comparator<T> _cmp;
 
     public MaxHeap(Comparator<T> cmp) {
@@ -15,9 +15,11 @@ public class MaxHeap<T extends Comparable<T>> {
     private class HandleMH implements Handle<T>{
         /*Completar con los atributos privados*/
         private T _ref;
+        private int _indice;
 
-        private HandleMH(T n){
+        private HandleMH(T n, int i){
             this._ref = n;
+            this._indice = i;
         }
 
         public T valor(){
@@ -25,9 +27,8 @@ public class MaxHeap<T extends Comparable<T>> {
         }
 
         public void modificar(T v){
-            int indice = _heap.indexOf(v);
-            indice = reordenarHeapUp(indice); // paso indice xq estaba mirando solo el ultimo elemento del heap. quiero ver el indice del elemento que se modifico, para reordenar el heap desde ahi.
-            bajarIesiemo(indice);
+            int nuevoIndice = reordenarHeapUp(this._indice); // paso indice xq estaba mirando solo el ultimo elemento del heap. quiero ver el indice del elemento que se modifico, para reordenar el heap desde ahi.
+            bajarIesiemo(nuevoIndice);
         }
 
         public void eliminar(){}
@@ -46,8 +47,8 @@ public class MaxHeap<T extends Comparable<T>> {
     }
 
     public HandleMH encolar(T elem) {
-        HandleMH nuevo = new HandleMH(elem);
-        _heap.add(elem);
+        HandleMH nuevo = new HandleMH(elem, _heap.size());
+        _heap.add(nuevo);
         int indice = _heap.size()-1;
         reordenarHeapUp(indice);
         // bajarIesiemo(indice); !! acá saco esa xq ya lo agregué al final y no hace falta bajar, solo subir si necesario. (además, si lo reordeno, el ultimo elemento puede cambiar a otro, pero igual no hay que bajarlo a este otro...)
@@ -58,10 +59,17 @@ public class MaxHeap<T extends Comparable<T>> {
     private int reordenarHeapUp(int i) {
         while (i > 0) {
             int padreIndex = (i - 1) / 2;
-            if (_cmp.compare(_heap.get(i), _heap.get(padreIndex)) > 0) {
-                T temp = _heap.get(i);
-                _heap.set(i, _heap.get(padreIndex));
-                _heap.set(padreIndex, temp);
+
+            if (_cmp.compare(_heap.get(i).valor(), _heap.get(padreIndex).valor()) > 0) {
+                HandleMH hijo = _heap.get(i);
+                HandleMH padre = _heap.get(padreIndex);
+
+                hijo._indice = padreIndex;
+                padre._indice = i;
+
+                _heap.set(i, padre);
+                _heap.set(padreIndex, hijo);
+
                 i = padreIndex;
             } else {
                 break;
@@ -74,21 +82,27 @@ public class MaxHeap<T extends Comparable<T>> {
         int n = _heap.size();
         while (true) {
             int izq = 2 * i + 1, der = 2 * i + 2, mayor = i;
-            if (izq < n && _cmp.compare(_heap.get(izq), _heap.get(mayor)) > 0)
+            if (izq < n && _cmp.compare(_heap.get(izq).valor(), _heap.get(mayor).valor()) > 0)
                 mayor = izq;
-            if (der < n && _cmp.compare(_heap.get(der), _heap.get(mayor)) > 0)
+            if (der < n && _cmp.compare(_heap.get(der).valor(), _heap.get(mayor).valor()) > 0)
                 mayor = der;
             if (mayor == i)
                 break;
-            T tmp = _heap.get(i);
-            _heap.set(i, _heap.get(mayor));
-            _heap.set(mayor, tmp);
+
+            HandleMH actual = _heap.get(i);
+            HandleMH hijoMayor = _heap.get(mayor);
+
+            actual._indice = mayor;
+            hijoMayor._indice = i;
+
+            _heap.set(i, hijoMayor);
+            _heap.set(mayor, actual);
             i = mayor;
         }
     }
 
     public T maximo() {
-        if (!(_heap.isEmpty())) { return _heap.get(0);}
+        if (!(_heap.isEmpty())) { return _heap.get(0).valor();}
         else {return null;}
     }
 
@@ -96,15 +110,27 @@ public class MaxHeap<T extends Comparable<T>> {
         return _heap.size();
     }
 
-    public T desencolarMax() {
-        T res = null;
+    public HandleMH desencolarMax() {
+        if (_heap.isEmpty()) {
+            return null;
+        }
+
+        HandleMH res = _heap.get(0);
+        HandleMH ultimo = _heap.remove(_heap.size() - 1);
+
         if (!(_heap.isEmpty())){
-            res = _heap.get(0);
-            _heap.set(0, _heap.get(_heap.size() - 1));
+            ultimo._indice = 0;
+            _heap.set(0, ultimo);
             bajarIesiemo(0);
-            _heap.remove(_heap.size() - 1);
         }
 
         return res;
+    }
+
+    public void reencolar(Handle<T> handle) {
+        HandleMH handleMH = (HandleMH) handle;
+        handleMH._indice = _heap.size();
+        _heap.add(handleMH);
+        reordenarHeapUp(handleMH._indice);
     }
 }

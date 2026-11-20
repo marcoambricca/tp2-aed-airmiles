@@ -172,16 +172,16 @@ public class AirMiles implements SistemaAirMiles {
     public int[] rankingMillas(int n) {
         int largo = rankingMillas.tamano() < n ? rankingMillas.tamano() : n;
         int[] ranking = new int[largo];
-        Usuario[] aux = new Usuario[largo];
+        ArrayList<Handle<Usuario>> aux = new ArrayList<>();
         // los saco para armar el ranking
         for (int i = 0; i < largo; i++) {
-            Usuario u = rankingMillas.desencolarMax();
-            ranking[i] = u.getId();
-            aux[i] = u;
+            Handle<Usuario> u = rankingMillas.desencolarMax();
+            ranking[i] = u.valor().getId();
+            aux.add(u);
         }
         // los vuelvo a encolar para no perder el ranking
         for (int i = 0; i < largo; i++) {
-            rankingMillas.encolar(aux[i]);
+            rankingMillas.reencolar(aux.get(i));
         }
         return ranking;
     }
